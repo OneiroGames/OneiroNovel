@@ -1,0 +1,29 @@
+[gd_scene load_steps=9 format=3 uid="uid://cq31yhgtwnre1"]
+
+[ext_resource type="Script" path="res://game/scripts/Game.cs" id="1_fr6hj"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/OneiroNovelMain.cs" id="2_arhg7"]
+[ext_resource type="PackedScene" uid="uid://b6dbk2r3f4hyj" path="res://game/scenes/bg_test.tscn" id="3_j0b3l"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/OneiroNovelResources.cs" id="3_rq2od"]
+[ext_resource type="PackedScene" uid="uid://bmiensvnmvt7t" path="res://game/scenes/bg_test2.tscn" id="4_c35ev"]
+[ext_resource type="Resource" uid="uid://bgcnomiqt7ta5" path="res://game/scripts/vn_main.ink" id="4_jal5k"]
+[ext_resource type="PackedScene" uid="uid://dcsqrxkhd2h8d" path="res://game/scenes/sprite_me.tscn" id="5_2ekat"]
+[ext_resource type="PackedScene" uid="uid://bs0u2mwro7opk" path="res://game/scenes/vn_gui.tscn" id="6_8kf6e"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_fr6hj")
+
+[node name="NovelResources" type="Node2D" parent="."]
+script = ExtResource("3_rq2od")
+Backgrounds = {
+ExtResource("3_j0b3l"): "test",
+ExtResource("4_c35ev"): "test2"
+}
+Sprites = {
+ExtResource("5_2ekat"): ["main"]
+}
+
+[node name="NovelMain" type="Node2D" parent="." node_paths=PackedStringArray("Resources")]
+script = ExtResource("2_arhg7")
+Gui = ExtResource("6_8kf6e")
+Resources = NodePath("../NovelResources")
+StartScript = ExtResource("4_jal5k")

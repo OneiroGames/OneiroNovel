@@ -1,0 +1,101 @@
+[gd_scene load_steps=9 format=3 uid="uid://bs0u2mwro7opk"]
+
+[ext_resource type="Script" path="res://addons/OneiroNovel/OneiroNovelGuiManager.cs" id="1_pi5yq"]
+[ext_resource type="Shader" path="res://addons/OneiroNovel/assets/shaders/dissolve_shader.gdshader" id="1_sw6d7"]
+[ext_resource type="Texture2D" uid="uid://dwfg7argrmmoh" path="res://addons/OneiroNovel/assets/textures/dissolve_texture.tres" id="2_kiavv"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pbgri"]
+shader = ExtResource("1_sw6d7")
+shader_parameter/UseColor = true
+shader_parameter/DissolveValue = 1.0
+shader_parameter/DissolveTexture = ExtResource("2_kiavv")
+
+[sub_resource type="SystemFont" id="SystemFont_hvjid"]
+
+[sub_resource type="Theme" id="Theme_c0g2w"]
+default_font = SubResource("SystemFont_hvjid")
+default_font_size = 25
+
+[sub_resource type="SystemFont" id="SystemFont_6t4xg"]
+
+[sub_resource type="Theme" id="Theme_s5bu1"]
+default_font = SubResource("SystemFont_6t4xg")
+default_font_size = 20
+
+[node name="Control" type="Control"]
+top_level = true
+layout_mode = 3
+anchors_preset = 0
+
+[node name="NovelGuiManager" type="Node2D" parent="." node_paths=PackedStringArray("TextBox", "NameLabel", "TextLabel")]
+script = ExtResource("1_pi5yq")
+TextBox = NodePath("../TextBox")
+NameLabel = NodePath("../TextBox/NameRect/Name")
+TextLabel = NodePath("../TextBox/TextRect/Text")
+
+[node name="TextBox" type="Control" parent="."]
+material = SubResource("ShaderMaterial_pbgri")
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="NameRect" type="ColorRect" parent="TextBox"]
+use_parent_material = true
+layout_mode = 0
+offset_left = 217.0
+offset_top = 710.0
+offset_right = 484.0
+offset_bottom = 758.0
+color = Color(0.160784, 0.160784, 0.160784, 0.690196)
+
+[node name="Name" type="RichTextLabel" parent="TextBox/NameRect"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -106.5
+offset_top = -18.0
+offset_right = 102.5
+offset_bottom = 19.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_c0g2w")
+text = "Name"
+scroll_active = false
+autowrap_mode = 0
+shortcut_keys_enabled = false
+threaded = true
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+visible_characters_behavior = 2
+
+[node name="TextRect" type="ColorRect" parent="TextBox"]
+use_parent_material = true
+layout_mode = 0
+offset_left = 182.0
+offset_top = 758.0
+offset_right = 1460.0
+offset_bottom = 899.0
+color = Color(0.160784, 0.160784, 0.160784, 0.690196)
+
+[node name="Text" type="RichTextLabel" parent="TextBox/TextRect"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.012
+anchor_top = 0.057
+anchor_right = 0.012
+anchor_bottom = 0.057
+offset_left = -0.200001
+offset_top = -0.0370007
+offset_right = 1558.8
+offset_bottom = 121.963
+theme = SubResource("Theme_s5bu1")
+text = "Text."
+scroll_active = false
+shortcut_keys_enabled = false
+threaded = true
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+visible_characters_behavior = 2

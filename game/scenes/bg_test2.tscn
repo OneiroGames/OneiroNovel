@@ -1,0 +1,22 @@
+[gd_scene load_steps=6 format=3 uid="uid://bmiensvnmvt7t"]
+
+[ext_resource type="Shader" path="res://addons/OneiroNovel/assets/shaders/dissolve_shader.gdshader" id="1_pb7y5"]
+[ext_resource type="Texture2D" uid="uid://dwfg7argrmmoh" path="res://addons/OneiroNovel/assets/textures/dissolve_texture.tres" id="2_ple1d"]
+[ext_resource type="Texture2D" uid="uid://jphsggmmc65c" path="res://game/assets/icon.svg" id="3_n3wnx"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/OneiroNovelSprite.cs" id="4_stm1e"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_af2h3"]
+shader = ExtResource("1_pb7y5")
+shader_parameter/UseColor = null
+shader_parameter/DissolveValue = null
+shader_parameter/DissolveTexture = ExtResource("2_ple1d")
+
+[node name="test2" type="Node2D"]
+
+[node name="test2" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_af2h3")
+position = Vector2(800, 450)
+scale = Vector2(12.5, 7.03125)
+texture = ExtResource("3_n3wnx")
+script = ExtResource("4_stm1e")
+TransitionMaterial = SubResource("ShaderMaterial_af2h3")
