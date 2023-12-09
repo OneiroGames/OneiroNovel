@@ -8,7 +8,7 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ofnbd"]
 shader = ExtResource("1_p4mbn")
 shader_parameter/UseColor = null
-shader_parameter/DissolveValue = null
+shader_parameter/TransitionValue = null
 shader_parameter/DissolveTexture = ExtResource("2_iw1no")
 
 [node name="test" type="Node2D"]

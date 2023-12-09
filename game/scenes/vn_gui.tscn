@@ -7,7 +7,7 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_pbgri"]
 shader = ExtResource("1_sw6d7")
 shader_parameter/UseColor = true
-shader_parameter/DissolveValue = 1.0
+shader_parameter/TransitionValue = null
 shader_parameter/DissolveTexture = ExtResource("2_kiavv")
 
 [sub_resource type="SystemFont" id="SystemFont_hvjid"]

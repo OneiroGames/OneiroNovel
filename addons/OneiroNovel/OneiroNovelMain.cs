@@ -30,7 +30,7 @@ public partial class OneiroNovelMain : Node2D
     private OneiroNovelGuiManager _guiManager;
     private Node _guiSceneNode;
 
-    private TextBox _textBox;
+    private OneiroNovelTransition _textBoxTransition;
 
     private bool _isTransitionEffect;
     private bool _isSkipTransitionEffect;
@@ -62,12 +62,7 @@ public partial class OneiroNovelMain : Node2D
         AddChild(_guiSceneNode);
         _guiManager = _guiSceneNode.GetNode<OneiroNovelGuiManager>(GuiManagerName);
 
-        _textBox = new TextBox
-        {
-            Node = _guiManager.TextBox,
-            ShaderMaterial = (ShaderMaterial)_guiManager.TextBox.Material
-        };
-        _textBox.ShaderMaterial.SetShaderParameter("DissolveValue", 0.0f);
+        _textBoxTransition = new OneiroNovelTransition((ShaderMaterial)_guiManager.TextBox.Material);
 
         foreach (var background in Resources.Backgrounds)
         {
@@ -211,23 +206,21 @@ public partial class OneiroNovelMain : Node2D
 
         if (_sInstance._spritesToRemove.Count == 0)
         {
-            if (_sInstance._currentBackground.Value.TransitionMaterial.GetShaderParameter("DissolveValue").As<float>() >= 1.0f)
+            if (_sInstance._currentBackground.Value.Transition.IsEnded())
             {
-                _sInstance._currentBackground.Value.TransitionMaterial.SetShaderParameter("DissolveValue", 1.0f);
                 var isSpritesShowed = true;
                 foreach (var sprite in _sInstance._currentSprites)
                 {
-                    var dissolveValue = sprite.TransitionMaterial.GetShaderParameter("DissolveValue").As<float>();
-                    if (dissolveValue < 1.0f)
+                    if (!sprite.Transition.IsEnded())
                     {
                         if (_sInstance._isSkipTransitionEffect)
                         {
-                            sprite.TransitionMaterial.SetShaderParameter("DissolveValue", 1.0f);
+                            sprite.Transition.SetTransitionValue(1.0f);
                             _sInstance._isSkipTransitionEffect = false;
                         }
                         else
                         {
-                            sprite.TransitionMaterial.SetShaderParameter("DissolveValue", dissolveValue + delta * _sInstance.DissolveSpritesValue);
+                            sprite.Transition.Proccess(delta * _sInstance.DissolveSpritesValue);
                         }
 
                         isSpritesShowed = false;
@@ -236,14 +229,13 @@ public partial class OneiroNovelMain : Node2D
                     else
                     {
                         _sInstance._isTransitionEffect = false;
-                        sprite.TransitionMaterial.SetShaderParameter("DissolveValue", 1.0f);
+                        sprite.Transition.SetTransitionValue(1.0f);
                     }
                 }
 
                 if (isSpritesShowed)
                 {
-                    var textBoxDissolveValue = _sInstance._textBox.ShaderMaterial.GetShaderParameter("DissolveValue").As<float>();
-                    if (textBoxDissolveValue >= 1.0f)
+                    if (_sInstance._textBoxTransition.IsEnded())
                     {
                         _sInstance._isTransitionEffect = false;
                         _sInstance._guiManager.NameLabel.Text = _sInstance._currentName;
@@ -253,12 +245,12 @@ public partial class OneiroNovelMain : Node2D
                     {
                         if (_sInstance._isSkipTransitionEffect)
                         {
-                            _sInstance._textBox.ShaderMaterial.SetShaderParameter("DissolveValue", 1.0f);
+                            _sInstance._textBoxTransition.SetTransitionValue(1.0f);
                             _sInstance._isSkipTransitionEffect = true;
                         }
                         else
                         {
-                            _sInstance._textBox.ShaderMaterial.SetShaderParameter("DissolveValue", textBoxDissolveValue + delta * _sInstance.DissolveTextBoxValue);
+                            _sInstance._textBoxTransition.Proccess(delta * _sInstance.DissolveTextBoxValue);
                         }
 
                         _sInstance._isTransitionEffect = true;
@@ -267,50 +259,46 @@ public partial class OneiroNovelMain : Node2D
             }
             else if (_sInstance._previousBackground.Key == null)
             {
-                var dissolveValue = _sInstance._currentBackground.Value.TransitionMaterial.GetShaderParameter("DissolveValue").As<float>();
                 if (_sInstance._isSkipTransitionEffect)
                 {
-                    _sInstance._currentBackground.Value.TransitionMaterial.SetShaderParameter("DissolveValue", 1.0f);
+                    _sInstance._currentBackground.Value.Transition.SetTransitionValue(1.0f);
                     _sInstance._isSkipTransitionEffect = false;
                 }
                 else
                 {
-                    _sInstance._currentBackground.Value.TransitionMaterial.SetShaderParameter("DissolveValue", dissolveValue + delta * _sInstance.DissolveBackgroundValue);
+                    _sInstance._currentBackground.Value.Transition.Proccess(delta * _sInstance.DissolveBackgroundValue);
                 }
 
                 _sInstance._isTransitionEffect = true;
             }
             else
             {
-                var textBoxDissovleValue = _sInstance._textBox.ShaderMaterial.GetShaderParameter("DissolveValue").As<float>();
-                if (textBoxDissovleValue > 0.0f)
+                if (_sInstance._textBoxTransition.IsEnded(true))
                 {
                     if (_sInstance._isSkipTransitionEffect)
                     {
-                        _sInstance._textBox.ShaderMaterial.SetShaderParameter("DissolveValue", 0.0f);
+                        _sInstance._textBoxTransition.SetTransitionValue();
                         _sInstance._isSkipTransitionEffect = false;
                     }
                     else
                     {
-                        _sInstance._textBox.ShaderMaterial.SetShaderParameter("DissolveValue", textBoxDissovleValue - delta * _sInstance.DissolveTextBoxValue);
+                        _sInstance._textBoxTransition.Proccess(delta * _sInstance.DissolveTextBoxValue, true);
                     }
 
                     _sInstance._isTransitionEffect = true;
                 }
                 else
                 {
-                    var dissolveValue = _sInstance._previousBackground.Value.TransitionMaterial.GetShaderParameter("DissolveValue").As<float>();
-                    if (dissolveValue > 0.0f)
+                    if (_sInstance._previousBackground.Value.Transition.IsEnded(true))
                     {
                         if (_sInstance._isSkipTransitionEffect)
                         {
-                            _sInstance._previousBackground.Value.TransitionMaterial.SetShaderParameter("DissolveValue", 0.0f);
+                            _sInstance._previousBackground.Value.Transition.SetTransitionValue();
                             _sInstance._isSkipTransitionEffect = false;
                         }
                         else
                         {
-                            _sInstance._previousBackground.Value.TransitionMaterial.SetShaderParameter("DissolveValue",
-                                dissolveValue - delta * _sInstance.DissolveBackgroundValue);
+                            _sInstance._previousBackground.Value.Transition.Proccess(delta * _sInstance.DissolveBackgroundValue, true);
                         }
 
                         _sInstance._isTransitionEffect = true;
@@ -325,17 +313,16 @@ public partial class OneiroNovelMain : Node2D
         }
         else
         {
-            var textBoxDissovleValue = _sInstance._textBox.ShaderMaterial.GetShaderParameter("DissolveValue").As<float>();
-            if (textBoxDissovleValue > 0.0f)
+            if (_sInstance._textBoxTransition.IsEnded(true))
             {
                 if (_sInstance._isSkipTransitionEffect)
                 {
-                    _sInstance._textBox.ShaderMaterial.SetShaderParameter("DissolveValue", 0.0f);
+                    _sInstance._textBoxTransition.SetTransitionValue();
                     _sInstance._isSkipTransitionEffect = false;
                 }
                 else
                 {
-                    _sInstance._textBox.ShaderMaterial.SetShaderParameter("DissolveValue", textBoxDissovleValue - delta * _sInstance.DissolveTextBoxValue);
+                    _sInstance._textBoxTransition.Proccess(delta * _sInstance.DissolveTextBoxValue, true);
                 }
 
                 _sInstance._isTransitionEffect = true;
@@ -344,18 +331,17 @@ public partial class OneiroNovelMain : Node2D
             {
                 foreach (var sprite in _sInstance._spritesToRemove)
                 {
-                    var dissolveValue = sprite.TransitionMaterial.GetShaderParameter("DissolveValue").As<float>();
-                    if (dissolveValue > 0.0f)
+                    if (sprite.Transition.IsEnded(true))
                     {
                         _sInstance._isTransitionEffect = true;
                         if (_sInstance._isSkipTransitionEffect)
                         {
-                            sprite.TransitionMaterial.SetShaderParameter("DissolveValue", 0.0f);
+                            sprite.Transition.SetTransitionValue();
                             _sInstance._isSkipTransitionEffect = false;
                         }
                         else
                         {
-                            sprite.TransitionMaterial.SetShaderParameter("DissolveValue", dissolveValue - delta * _sInstance.DissolveSpritesValue);
+                            sprite.Transition.Proccess(delta * _sInstance.DissolveSpritesValue, true);
                         }
                     }
                     else
@@ -412,11 +398,5 @@ public partial class OneiroNovelMain : Node2D
     {
         public string Emotion = "";
         public string Name = "";
-    }
-
-    private class TextBox
-    {
-        public Node Node;
-        public ShaderMaterial ShaderMaterial;
     }
 }

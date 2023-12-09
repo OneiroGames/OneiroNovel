@@ -5,12 +5,15 @@ public partial class OneiroNovelSprite : Sprite2D
 {
     [Export] public ShaderMaterial TransitionMaterial;
 
+    public OneiroNovelTransition Transition;
+
     public override void _Ready()
     {
 #if !TOOLS
         Material = TransitionMaterial;
-        TransitionMaterial.SetShaderParameter("DissolveValue", 0.0f);
+        TransitionMaterial.SetShaderParameter("TransitionValue", TransitionValue);
 #endif
+        Transition = new OneiroNovelTransition(TransitionMaterial);
     }
 
 #if TOOLS
