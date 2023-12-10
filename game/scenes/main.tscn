@@ -1,13 +1,15 @@
-[gd_scene load_steps=9 format=3 uid="uid://cq31yhgtwnre1"]
+[gd_scene load_steps=11 format=3 uid="uid://cq31yhgtwnre1"]
 
 [ext_resource type="Script" path="res://game/scripts/Game.cs" id="1_fr6hj"]
-[ext_resource type="Script" path="res://addons/OneiroNovel/OneiroNovelMain.cs" id="2_arhg7"]
-[ext_resource type="PackedScene" uid="uid://b6dbk2r3f4hyj" path="res://game/scenes/bg_test.tscn" id="3_j0b3l"]
-[ext_resource type="Script" path="res://addons/OneiroNovel/OneiroNovelResources.cs" id="3_rq2od"]
-[ext_resource type="PackedScene" uid="uid://bmiensvnmvt7t" path="res://game/scenes/bg_test2.tscn" id="4_c35ev"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelMain.cs" id="2_arhg7"]
+[ext_resource type="PackedScene" uid="uid://bmiensvnmvt7t" path="res://game/scenes/bg_street_day.tscn" id="3_kw0a3"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelResources.cs" id="3_rq2od"]
+[ext_resource type="PackedScene" uid="uid://b6dbk2r3f4hyj" path="res://game/scenes/bg_bus_stop.tscn" id="4_5l76s"]
 [ext_resource type="Resource" uid="uid://bgcnomiqt7ta5" path="res://game/scripts/vn_main.ink" id="4_jal5k"]
-[ext_resource type="PackedScene" uid="uid://dcsqrxkhd2h8d" path="res://game/scenes/sprite_me.tscn" id="5_2ekat"]
+[ext_resource type="PackedScene" uid="uid://dcsqrxkhd2h8d" path="res://game/scenes/sprite_rin.tscn" id="5_xdbgl"]
+[ext_resource type="Resource" uid="uid://ckj7ndr8uo1ek" path="res://addons/OneiroNovel/assets/transitions/dissolve_transition.tres" id="6_4wy1x"]
 [ext_resource type="PackedScene" uid="uid://bs0u2mwro7opk" path="res://game/scenes/vn_gui.tscn" id="6_8kf6e"]
+[ext_resource type="Resource" uid="uid://cgu3nk2na0oho" path="res://addons/OneiroNovel/assets/transitions/fade_transition.tres" id="10_ch4wk"]
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_fr6hj")
@@ -15,15 +17,20 @@ script = ExtResource("1_fr6hj")
 [node name="NovelResources" type="Node2D" parent="."]
 script = ExtResource("3_rq2od")
 Backgrounds = {
-ExtResource("3_j0b3l"): "test",
-ExtResource("4_c35ev"): "test2"
+ExtResource("3_kw0a3"): "street_day",
+ExtResource("4_5l76s"): "bus_stop"
 }
 Sprites = {
-ExtResource("5_2ekat"): ["main"]
+ExtResource("5_xdbgl"): ["frown", "open_smile"]
 }
+Transitions = [ExtResource("6_4wy1x"), ExtResource("10_ch4wk")]
 
 [node name="NovelMain" type="Node2D" parent="." node_paths=PackedStringArray("Resources")]
 script = ExtResource("2_arhg7")
+DissolveBackgroundValue = 1.25
+DissolveSpritesValue = 1.75
+DissolveTextBoxValue = 2.0
 Gui = ExtResource("6_8kf6e")
 Resources = NodePath("../NovelResources")
 StartScript = ExtResource("4_jal5k")
+DefaultTransition = ExtResource("10_ch4wk")

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" load_steps=6 format=3 uid="uid://ckj7ndr8uo1ek"]
+
+[ext_resource type="Shader" path="res://addons/OneiroNovel/assets/shaders/dissolve_shader.gdshader" id="1_cbsbb"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelTransition.cs" id="2_gqsj6"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_p6sgu"]
+noise_type = 0
+seed = 170
+frequency = 0.0094
+fractal_type = 0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_hlbyt"]
+noise = SubResource("FastNoiseLite_p6sgu")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_s0aql"]
+shader = ExtResource("1_cbsbb")
+shader_parameter/UseColor = null
+shader_parameter/TransitionValue = null
+shader_parameter/DissolveTexture = SubResource("NoiseTexture2D_hlbyt")
+
+[resource]
+script = ExtResource("2_gqsj6")
+Tag = "dissolve"
+TransitionMaterial = SubResource("ShaderMaterial_s0aql")

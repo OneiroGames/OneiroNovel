@@ -1,0 +1,27 @@
+[gd_resource type="Resource" load_steps=6 format=3 uid="uid://cgu3nk2na0oho"]
+
+[ext_resource type="Shader" path="res://addons/OneiroNovel/assets/shaders/fade_shader.gdshader" id="1_ajsdd"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelTransition.cs" id="2_4jrql"]
+
+[sub_resource type="Gradient" id="Gradient_8gi1w"]
+offsets = PackedFloat32Array(0, 0.529851, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0.440298, 0.440298, 0.440298, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_qwx46"]
+gradient = SubResource("Gradient_8gi1w")
+width = 512
+height = 512
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0, 0)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_h32kj"]
+shader = ExtResource("1_ajsdd")
+shader_parameter/UseColor = null
+shader_parameter/TransitionValue = 0.5
+shader_parameter/DissolveTexture = SubResource("GradientTexture2D_qwx46")
+
+[resource]
+script = ExtResource("2_4jrql")
+Tag = "fade"
+TransitionMaterial = SubResource("ShaderMaterial_h32kj")

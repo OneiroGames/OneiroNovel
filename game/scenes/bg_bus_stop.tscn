@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://b6dbk2r3f4hyj"]
+
+[ext_resource type="Texture2D" uid="uid://b2x36yo255xa" path="res://game/assets/backgrounds/BusStop_Summer_Afternoon.png" id="1_jva7f"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelSprite.cs" id="2_irh45"]
+
+[node name="bus_stop" type="Node2D"]
+
+[node name="bus_stop" type="Sprite2D" parent="."]
+position = Vector2(800, 450)
+scale = Vector2(0.833594, 0.833594)
+texture = ExtResource("1_jva7f")
+script = ExtResource("2_irh45")
