@@ -10,15 +10,23 @@ public partial class OneiroNovelMain : Node2D
     [Export] public float DissolveBackgroundValue = 0.75f;
     [Export] public float DissolveSpritesValue = 1.25f;
     [Export] public float DissolveTextBoxValue = 1.75f;
-    [Export] public PackedScene Gui;
+    
+    [Export] public PackedScene GuiScene;
     [Export] public string GuiManagerName = "NovelGuiManager";
+    
+    [Export] public PackedScene AudioScene;
+    [Export] public string AudioManagerName = "NovelAudioManager";
+    
     [Export] public OneiroNovelResources Resources;
-    [Export] public InkStory StartScript;
     [Export] public OneiroNovelTransition DefaultTransition;
+
+    [Export] public Godot.Collections.Dictionary<InkStory, string> Stories;
 
     private readonly List<KeyValuePair<Node2D, List<OneiroNovelSprite>>> _sprites = new();
     private readonly List<KeyValuePair<Node2D, OneiroNovelSprite>> _backgrounds = new();
-
+    
+    private InkStory _currentStory;
+    
     private string _currentName = "";
     private string _currentText = "";
 
@@ -30,6 +38,9 @@ public partial class OneiroNovelMain : Node2D
 
     private OneiroNovelGuiManager _guiManager;
     private Node _guiSceneNode;
+    
+    private OneiroNovelAudioManager _audioManager;
+    private Node _audioSceneNode;
 
     private OneiroNovelTransition _textBoxTransition;
 
@@ -45,7 +56,10 @@ public partial class OneiroNovelMain : Node2D
         Hide,
         Scene,
         WithTransition,
-        AtAnchor
+        AtAnchor,
+        Jump,
+        PlayAudio,
+        StopAudio
     }
 
     private class BackgroundDescription
@@ -87,12 +101,30 @@ public partial class OneiroNovelMain : Node2D
         return new KeyValuePair<Node2D, OneiroNovelSprite>();
     }
 
+    public static void ChangeStory(KeyValuePair<InkStory, string> story)
+    {
+        _sInstance._currentStory = story.Key;
+        _sInstance._currentStory.ChoosePathString(story.Value);
+    }
+
+    public static KeyValuePair<InkStory, string> GetStory(string name)
+    {
+        foreach (var item in _sInstance.Stories)
+            if (item.Key.GlobalTags[0] == name)
+                return item;
+        return new KeyValuePair<InkStory, string>();
+    }
+    
     public override void _Ready()
     {
         _sInstance = this;
-        _guiSceneNode = Gui.Instantiate();
+        _guiSceneNode = GuiScene.Instantiate();
         AddChild(_guiSceneNode);
         _guiManager = _guiSceneNode.GetNode<OneiroNovelGuiManager>(GuiManagerName);
+        
+        _audioSceneNode = AudioScene.Instantiate();
+        AddChild(_audioSceneNode);
+        _audioManager = _audioSceneNode.GetNode<OneiroNovelAudioManager>(AudioManagerName);
 
         _textBoxTransition = new OneiroNovelTransition(DefaultTransition);
         _guiManager.TextBox.Material = _textBoxTransition.TransitionMaterial;
@@ -126,6 +158,13 @@ public partial class OneiroNovelMain : Node2D
 
             _sprites.Add(new KeyValuePair<Node2D, List<OneiroNovelSprite>>(node, sprites));
         }
+        
+        if (Stories.Count > 0)
+        {
+            using var enumerator = Stories.GetEnumerator();
+            enumerator.MoveNext();
+            ChangeStory(enumerator.Current);
+        }
     }
 
     public static void Start()
@@ -147,7 +186,7 @@ public partial class OneiroNovelMain : Node2D
 
         _sInstance._guiManager.NameLabel.Text = "";
         _sInstance._guiManager.TextLabel.Text = "";
-        var text = _sInstance.StartScript.Continue();
+        var text = _sInstance._currentStory.Continue();
         var pos = text.Find(':');
         if (pos != -1)
         {
@@ -159,7 +198,7 @@ public partial class OneiroNovelMain : Node2D
 
         _sInstance._currentText = text;
 
-        foreach (var currentTag in _sInstance.StartScript.CurrentTags)
+        foreach (var currentTag in _sInstance._currentStory.CurrentTags)
         {
             var tag = currentTag;
 
@@ -200,8 +239,17 @@ public partial class OneiroNovelMain : Node2D
                     case "with":
                         commandType = ECommandType.WithTransition;
                         continue;
+                    case "jump":
+                        commandType = ECommandType.Jump;
+                        continue;
+                    case "play":
+                        commandType = ECommandType.PlayAudio;
+                        continue;
+                    case "stop":
+                        commandType = ECommandType.StopAudio;
+                        continue;
                 }
-                
+
                 switch (commandType)
                 {
                     case ECommandType.None:
@@ -209,7 +257,7 @@ public partial class OneiroNovelMain : Node2D
                     case ECommandType.Show:
                         if (sprite != null)
                             break;
-                        
+
                         if (spriteDescription.Name.Length > 0)
                         {
                             spriteDescription.Emotion = cmd;
@@ -221,12 +269,12 @@ public partial class OneiroNovelMain : Node2D
                         {
                             spriteDescription.Name = cmd;
                         }
-                        
+
                         break;
                     case ECommandType.Hide:
                         if (sprite != null)
                             break;
-                        
+
                         if (spriteDescription.Name.Length > 0)
                         {
                             spriteDescription.Emotion = cmd;
@@ -240,16 +288,27 @@ public partial class OneiroNovelMain : Node2D
 
                         break;
                     case ECommandType.Scene:
-                        _sInstance._previousBackground = _sInstance._currentBackground;
-                        
+                        if (_sInstance._previousBackground.Value == null)
+                            _sInstance._previousBackground = _sInstance._currentBackground;
+
                         backgroundDescription.Name = cmd;
                         _sInstance._currentBackground = GetBackground(backgroundDescription.Name);
                         _sInstance._currentBackground.Value.SetTransition(new OneiroNovelTransition(_sInstance.DefaultTransition));
+                        _sInstance._currentBackground.Value.GetTransition().SetValue();
+                        _sInstance._currentBackground.Value.ZIndex = 0;
+                        if (_sInstance._previousBackground.Value != null)
+                        {
+                            _sInstance._previousBackground.Value.GetTransition().SetValue(1.0f);
+                            _sInstance._previousBackground.Value.ZIndex = -1;
+                        }
                         break;
                     case ECommandType.WithTransition:
                         var transition = GetTransition(cmd);
                         if (sprite != null && _sInstance._spritesToRemove.Count == 0)
+                        {
                             sprite.SetTransition(transition);
+                            sprite.GetTransition().SetValue();
+                        }
                         else if (_sInstance._spritesToRemove.Count > 0)
                         {
                             foreach (var spr in _sInstance._spritesToRemove)
@@ -261,7 +320,7 @@ public partial class OneiroNovelMain : Node2D
                         else if (_sInstance._currentBackground.Key != null)
                         {
                             _sInstance._currentBackground.Value.SetTransition(transition);
-                            
+                            _sInstance._currentBackground.Value.GetTransition().SetValue();
                         }
 
                         break;
@@ -270,6 +329,16 @@ public partial class OneiroNovelMain : Node2D
                             sprite.SetAnchor(Enum.Parse<OneiroNovelSprite.ESpriteAnchor>(cmd, true));
                         else if (_sInstance._currentBackground.Key != null)
                             _sInstance._currentBackground.Value.SetAnchor(Enum.Parse<OneiroNovelSprite.ESpriteAnchor>(cmd, true));
+                        break;
+                    case ECommandType.Jump:
+                        ChangeStory(GetStory(cmd));
+                        Next();
+                        break;
+                    case ECommandType.PlayAudio:
+                        _sInstance._audioManager.PlayAudio(cmd, 2.5f);
+                        break;
+                    case ECommandType.StopAudio:
+                        _sInstance._audioManager.StopAudio(cmd, 2.5f);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -305,13 +374,15 @@ public partial class OneiroNovelMain : Node2D
             }
             else
             {
+                _sInstance._currentBackground.Value.GetTransition().SetValue(1.0f);
+                _sInstance._isTransitionEffect = false;
                 _sInstance._isStart = false;
             }
         }
 
         if (_sInstance._spritesToRemove.Count == 0)
         {
-            if (_sInstance._currentBackground.Value.GetTransition().IsEnded())
+            if (_sInstance._currentBackground.Value.GetTransition().IsEnded() && _sInstance._previousBackground.Key == null)
             {
                 var isSpritesShowed = true;
                 foreach (var sprite in _sInstance._currentSprites)
@@ -326,15 +397,14 @@ public partial class OneiroNovelMain : Node2D
                         else
                         {
                             sprite.GetTransition().Process(delta * _sInstance.DissolveSpritesValue);
+                            _sInstance._isTransitionEffect = true;
                         }
-
                         isSpritesShowed = false;
-                        _sInstance._isTransitionEffect = true;
                     }
                     else
                     {
-                        _sInstance._isTransitionEffect = false;
                         sprite.GetTransition().SetValue(1.0f);
+                        _sInstance._isTransitionEffect = false;
                     }
                 }
 
@@ -342,6 +412,7 @@ public partial class OneiroNovelMain : Node2D
                 {
                     if (_sInstance._textBoxTransition.IsEnded())
                     {
+                        _sInstance._textBoxTransition.SetValue(1.0f);
                         _sInstance._isTransitionEffect = false;
                         _sInstance._guiManager.NameLabel.Text = _sInstance._currentName;
                         _sInstance._guiManager.TextLabel.Text = _sInstance._currentText;
@@ -351,14 +422,13 @@ public partial class OneiroNovelMain : Node2D
                         if (_sInstance._isSkipTransitionEffect)
                         {
                             _sInstance._textBoxTransition.SetValue(1.0f);
-                            _sInstance._isSkipTransitionEffect = true;
+                            _sInstance._isSkipTransitionEffect = false;
                         }
                         else
                         {
                             _sInstance._textBoxTransition.Process(delta * _sInstance.DissolveTextBoxValue);
+                            _sInstance._isTransitionEffect = true;
                         }
-
-                        _sInstance._isTransitionEffect = true;
                     }
                 }
             }
@@ -374,12 +444,12 @@ public partial class OneiroNovelMain : Node2D
                     else
                     {
                         _sInstance._textBoxTransition.Process(delta * _sInstance.DissolveTextBoxValue, true);
+                        _sInstance._isTransitionEffect = true;
                     }
-
-                    _sInstance._isTransitionEffect = true;
                 }
                 else
                 {
+                    _sInstance._textBoxTransition.SetValue();
                     if (!_sInstance._currentBackground.Value.GetTransition().IsEnded())
                     {
                         if (_sInstance._isSkipTransitionEffect)
@@ -389,15 +459,16 @@ public partial class OneiroNovelMain : Node2D
                         }
                         else
                         {
-                            _sInstance._currentBackground.Value.GetTransition().TransitionMaterial.SetShaderParameter("PreviousTexture", _sInstance._previousBackground.Value.Texture);
+                            _sInstance._currentBackground.Value.GetTransition().TransitionMaterial
+                                .SetShaderParameter("PreviousTexture", _sInstance._previousBackground.Value.Texture);
                             _sInstance._currentBackground.Value.GetTransition().Process(delta * _sInstance.DissolveBackgroundValue);
+                            _sInstance._isTransitionEffect = true;
                         }
-                        
-                        _sInstance._isTransitionEffect = true;
                     }
-                    
-                    if (_sInstance._currentBackground.Value.GetTransition().IsEnded())
+                    else
                     {
+                        _sInstance._previousBackground.Value.GetTransition().SetValue();
+                        _sInstance._currentBackground.Value.GetTransition().SetValue(1.0f);
                         _sInstance._previousBackground = new KeyValuePair<Node2D, OneiroNovelSprite>();
                         _sInstance._isTransitionEffect = false;
                     }
@@ -448,7 +519,7 @@ public partial class OneiroNovelMain : Node2D
 
     public static bool CanContinue()
     {
-        return _sInstance.StartScript.CanContinue;
+        return _sInstance._currentStory.CanContinue;
     }
 
     public static bool IsTransitionEffect()

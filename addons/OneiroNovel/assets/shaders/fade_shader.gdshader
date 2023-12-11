@@ -15,14 +15,7 @@ void fragment() {
 	else
 	{
 	   	mainTex = texture(TEXTURE, UV);
-		vec4 prevTex = texture(PreviousTexture, UV);
-		if (prevTex.a > 0.0f)
-		{
-			vec4 noiseTex = texture(DissolveTexture, UV);
-			mainTex.a *= floor(TransitionValue + min(1, noiseTex.r));
-		}
-		else
-			mainTex.a = min(TransitionValue, texture(TEXTURE, UV).a);
+		mainTex.a = min(TransitionValue, texture(TEXTURE, UV).a);
 	}
 	COLOR = mainTex;
 }

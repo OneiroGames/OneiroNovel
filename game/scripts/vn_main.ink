@@ -1,13 +1,21 @@
-﻿# scene street_day with dissolve
+﻿# main
+
+=== start ===
+
+# play farewell_to_the_past
+# scene street_day
 # show rin frown at center
 Me: Test1
-# scene bus_stop with dissolve
+# scene bus_stop
 # show rin open_smile at left
 Me: Test2
 # hide rin frown
 Me: Test3
 # show rin frown at right
 Me: Test4
-# hide rin frown with dissolve
+# hide rin frown
 # hide rin open_smile
 Me: Test5
+# stop farewell_to_the_past
+# jump day
+-> DONE

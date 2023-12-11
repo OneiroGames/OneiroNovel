@@ -51,6 +51,11 @@ public partial class InkStory : Resource
         };
     }
 
+    public Ink.Runtime.Story GetRuntimeStory()
+    {
+        return runtimeStory;
+    }
+
     private void InitializeRuntimeStory()
     {
         if (runtimeStory != null)

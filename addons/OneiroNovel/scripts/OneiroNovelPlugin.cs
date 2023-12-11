@@ -41,6 +41,32 @@ public partial class OneiroNovelPlugin : EditorPlugin
             {"base", "Resource"},
             {"script", GD.Load<CSharpScript>("res://addons/OneiroNovel/scripts/OneiroNovelTransition.cs")},
             {"icon", Variant.From<Texture2D>(null)}
+        },
+        new Dictionary
+        {
+            {"name", "NovelAudio"},
+            {"base", "AudioStreamPlayer2D"},
+            {"script", GD.Load<CSharpScript>("res://addons/OneiroNovel/scripts/OneiroNovelAudio.cs")},
+            {"icon", Variant.From<Texture2D>(null)}
+        },
+        new Dictionary
+        {
+            {"name", "NovelAudioManager"},
+            {"base", "Node2D"},
+            {"script", GD.Load<CSharpScript>("res://addons/OneiroNovel/scripts/OneiroNovelAudioManager.cs")},
+            {"icon", Variant.From<Texture2D>(null)}
+        }
+    });
+    
+    private Array<Dictionary> Settings = new(new[]
+    {
+        new Dictionary
+        {
+            { "name", "OneiroNovel/Settings/ModSearchPath" },
+            { "type", (int)Variant.Type.String },
+            { "hint", (int)PropertyHint.Dir },
+            { "hint_string", "" },
+            { "default_value", "res://game/mods/"}
         }
     });
     
@@ -50,6 +76,18 @@ public partial class OneiroNovelPlugin : EditorPlugin
         {
             AddCustomType(type["name"].As<string>(), type["base"].As<string>(), type["script"].As<Script>(), type["icon"].As<Texture2D>());
         }
+        
+        if (!ProjectSettings.HasSetting("OneiroNovel/Settings/ModSearchPath"))
+        {
+            foreach (var setting in Settings)
+            {
+                ProjectSettings.AddPropertyInfo(setting);
+                ProjectSettings.SetSetting(setting["name"].AsString(), setting["default_value"]);
+            }
+
+            ProjectSettings.Save();
+            ProjectSettings.Singleton.NotifyPropertyListChanged();
+        }
     }
 
     public override void _ExitTree()
@@ -58,6 +96,13 @@ public partial class OneiroNovelPlugin : EditorPlugin
         {
             RemoveCustomType(type["name"].As<string>());
         }
+
+        foreach (var setting in Settings)
+        {
+            ProjectSettings.Singleton.GetPropertyList().Remove(setting);
+        }
+        ProjectSettings.Save();
+        ProjectSettings.Singleton.NotifyPropertyListChanged();
     }
 }
 #endif

@@ -6,6 +6,7 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="game\scripts\vn_day.ink" />
     <Content Include="game\scripts\vn_main.ink" />
   </ItemGroup>
   <Import Project="addons\GodotInk\GodotInk.props" />

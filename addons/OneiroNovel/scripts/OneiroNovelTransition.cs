@@ -31,8 +31,7 @@ public partial class OneiroNovelTransition : Resource
         TransitionMaterial.Shader = copy.TransitionMaterial.Shader;
         TransitionMaterial.SetShaderParameter("PreviousTexture", copy.TransitionMaterial.GetShaderParameter("PreviousTexture"));
         TransitionMaterial.SetShaderParameter("DissolveTexture", copy.TransitionMaterial.GetShaderParameter("DissolveTexture"));
-        _transitionValue = copy._transitionValue;
-        SetValue();
+        SetValue(copy._transitionValue);
     }
 
     public void SetValue(float value = 0.0f)
@@ -84,5 +83,6 @@ public partial class OneiroNovelTransition : Resource
     {
         TransitionMaterial.SetShaderParameter("TransitionValue", value);
         _transitionValue = value;
+        EmitChanged();
     }
 }

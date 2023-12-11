@@ -2,3 +2,4 @@
 .idea/
 *.log
 *.sln.DotSettings.user
+addons/nv.file_system/

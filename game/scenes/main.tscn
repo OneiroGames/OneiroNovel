@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://cq31yhgtwnre1"]
+[gd_scene load_steps=13 format=3 uid="uid://cq31yhgtwnre1"]
 
 [ext_resource type="Script" path="res://game/scripts/Game.cs" id="1_fr6hj"]
 [ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelMain.cs" id="2_arhg7"]
@@ -10,6 +10,8 @@
 [ext_resource type="Resource" uid="uid://ckj7ndr8uo1ek" path="res://addons/OneiroNovel/assets/transitions/dissolve_transition.tres" id="6_4wy1x"]
 [ext_resource type="PackedScene" uid="uid://bs0u2mwro7opk" path="res://game/scenes/vn_gui.tscn" id="6_8kf6e"]
 [ext_resource type="Resource" uid="uid://cgu3nk2na0oho" path="res://addons/OneiroNovel/assets/transitions/fade_transition.tres" id="10_ch4wk"]
+[ext_resource type="PackedScene" uid="uid://som1u6oilsht" path="res://game/scenes/vn_audio.tscn" id="10_qw6b3"]
+[ext_resource type="Resource" uid="uid://d3ppbn7rcxx48" path="res://game/scripts/vn_day.ink" id="11_c652x"]
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_fr6hj")
@@ -30,7 +32,11 @@ script = ExtResource("2_arhg7")
 DissolveBackgroundValue = 1.25
 DissolveSpritesValue = 1.75
 DissolveTextBoxValue = 2.0
-Gui = ExtResource("6_8kf6e")
+GuiScene = ExtResource("6_8kf6e")
+AudioScene = ExtResource("10_qw6b3")
 Resources = NodePath("../NovelResources")
-StartScript = ExtResource("4_jal5k")
 DefaultTransition = ExtResource("10_ch4wk")
+Stories = {
+ExtResource("4_jal5k"): "start",
+ExtResource("11_c652x"): "start"
+}

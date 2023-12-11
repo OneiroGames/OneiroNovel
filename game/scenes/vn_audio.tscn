@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://som1u6oilsht"]
+
+[ext_resource type="AudioStream" uid="uid://5chnoubae2ye" path="res://game/assets/sounds/music/farewell_to_the_past.mp3" id="1_4fmqb"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelAudio.cs" id="2_m2ilh"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelAudioManager.cs" id="3_7r3vv"]
+
+[node name="Audio" type="Node2D"]
+
+[node name="AudioListener2D" type="AudioListener2D" parent="."]
+current = true
+
+[node name="NovelAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("1_4fmqb")
+script = ExtResource("2_m2ilh")
+Tag = "farewell_to_the_past"
+
+[node name="NovelAudioManager" type="Node2D" parent="." node_paths=PackedStringArray("Listener", "Audios")]
+script = ExtResource("3_7r3vv")
+Listener = NodePath("../AudioListener2D")
+Audios = [NodePath("../NovelAudio")]
