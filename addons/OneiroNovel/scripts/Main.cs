@@ -7,8 +7,6 @@ namespace OneiroNovel;
 
 public partial class Main : Node2D
 {
-    private static Main _sInstance;
-
     [Export] public float DissolveBackgroundValue = 0.75f;
     [Export] public float DissolveSpritesValue = 1.25f;
     [Export] public float DissolveTextBoxValue = 1.75f;
@@ -24,32 +22,34 @@ public partial class Main : Node2D
 
     [Export] public Godot.Collections.Dictionary<InkStory, string> Stories;
 
-    private readonly List<KeyValuePair<Node2D, List<Sprite>>> _sprites = new();
-    private readonly List<KeyValuePair<Node2D, Sprite>> _backgrounds = new();
+    private readonly List<KeyValuePair<Node2D, List<Sprite>>> sprites = new();
+    private readonly List<KeyValuePair<Node2D, Sprite>> backgrounds = new();
     
-    private InkStory _currentStory;
+    private InkStory currentStory;
     
-    private string _currentName = "";
-    private string _currentText = "";
+    private string currentName = "";
+    private string currentText = "";
 
-    private readonly List<Sprite> _currentSprites = new();
-    private readonly List<Sprite> _spritesToRemove = new();
+    private readonly List<Sprite> currentSprites = new();
+    private readonly List<Sprite> spritesToRemove = new();
 
-    private KeyValuePair<Node2D, Sprite> _currentBackground;
-    private KeyValuePair<Node2D, Sprite> _previousBackground;
-
-    private GuiManager _guiManager;
-    private Node _guiSceneNode;
+    private KeyValuePair<Node2D, Sprite> currentBackground;
+    private KeyValuePair<Node2D, Sprite> previousBackground;
     
-    private AudioManager _audioManager;
-    private Node _audioSceneNode;
+    private TransitionResource textBoxTransition;
 
-    private TransitionResource _textBoxTransition;
+    private GuiManager guiManager;
+    private Node guiSceneNode;
+    
+    private AudioManager audioManager;
+    private Node audioSceneNode;
 
-    private bool _isTransitionEffect;
-    private bool _isSkipTransitionEffect;
-    private bool _isSkipping;
-    private bool _isStart;
+    private bool isTransitionEffect;
+    private bool isSkipTransitionEffect;
+    private bool isSkipping;
+    private bool isStart;
+    
+    private static Main sInstance;
     
     private enum ECommandType
     {
@@ -65,74 +65,22 @@ public partial class Main : Node2D
         InBusAudio
     }
 
-    private class BackgroundDescription
-    {
-        public string Name = "";
-    }
-
-    private class SpriteDescription
-    {
-        public string Emotion = "";
-        public string Name = "";
-    }
-
-    private static TransitionResource GetTransition(string tag)
-    {
-        foreach (var transition in _sInstance.Resources.Transitions)
-            if (transition.Tag == tag)
-                return new TransitionResource(transition);
-
-        return null;
-    }
-    
-    private static Sprite GetSpriteEmotion(string spriteName, string emotionName)
-    {
-        foreach (var item in _sInstance._sprites)
-            if (item.Key.Name == spriteName)
-                foreach (var sprite in item.Value)
-                    if (sprite.Name == emotionName)
-                        return sprite;
-        return null;
-    }
-
-    private static KeyValuePair<Node2D, Sprite> GetBackground(string name)
-    {
-        foreach (var item in _sInstance._backgrounds)
-            if (item.Value.Name == name)
-                return item;
-
-        return new KeyValuePair<Node2D, Sprite>();
-    }
-
-    public static void ChangeStory(KeyValuePair<InkStory, string> story)
-    {
-        _sInstance._currentStory = story.Key;
-        _sInstance._currentStory.ChoosePathString(story.Value);
-    }
-
-    public static KeyValuePair<InkStory, string> GetStory(string name)
-    {
-        foreach (var item in _sInstance.Stories)
-            if (item.Key.GlobalTags[0] == name)
-                return item;
-        return new KeyValuePair<InkStory, string>();
-    }
-    
     public override void _Ready()
     {
-        _sInstance = this;
-        _guiSceneNode = GuiScene.Instantiate();
-        AddChild(_guiSceneNode);
-        _guiManager = _guiSceneNode.GetNode<GuiManager>(GuiManagerName);
+        sInstance = this;
         
-        _audioSceneNode = AudioScene.Instantiate();
-        AddChild(_audioSceneNode);
-        _audioManager = _audioSceneNode.GetNode<AudioManager>(AudioManagerName);
+        guiSceneNode = GuiScene.Instantiate();
+        AddChild(guiSceneNode);
+        guiManager = guiSceneNode.GetNode<GuiManager>(GuiManagerName);
+        
+        audioSceneNode = AudioScene.Instantiate();
+        AddChild(audioSceneNode);
+        audioManager = audioSceneNode.GetNode<AudioManager>(AudioManagerName);
 
-        _textBoxTransition = new TransitionResource(DefaultTransition);
-        _guiManager.TextBox.Material = _textBoxTransition.TransitionMaterial;
+        textBoxTransition = new TransitionResource(DefaultTransition);
+        guiManager.TextBox.Material = textBoxTransition.TransitionMaterial;
         
-        _textBoxTransition.TransitionMaterial.SetShaderParameter("UseColor", true);
+        textBoxTransition.TransitionMaterial.SetShaderParameter("UseColor", true);
 
         foreach (var background in Resources.Backgrounds)
         {
@@ -141,13 +89,13 @@ public partial class Main : Node2D
             bg.Visible = true;
             spr.Visible = true;
             spr.SetTransition(new TransitionResource(DefaultTransition));
-            _backgrounds.Add(new KeyValuePair<Node2D, Sprite>(bg, spr));
+            backgrounds.Add(new KeyValuePair<Node2D, Sprite>(bg, spr));
             AddChild(bg);
         }
 
         foreach (var sprite in Resources.Sprites)
         {
-            List<Sprite> sprites = new();
+            List<Sprite> spritesList = new();
             var node = sprite.Key.Instantiate<Node2D>();
             node.Visible = true;
             AddChild(node);
@@ -156,10 +104,10 @@ public partial class Main : Node2D
                 var spr = node.GetNode<Sprite>(spriteEmotion);
                 spr.Visible = true;
                 spr.SetTransition(new TransitionResource(DefaultTransition));
-                sprites.Add(spr);
+                spritesList.Add(spr);
             }
 
-            _sprites.Add(new KeyValuePair<Node2D, List<Sprite>>(node, sprites));
+            sprites.Add(new KeyValuePair<Node2D, List<Sprite>>(node, spritesList));
         }
         
         if (Stories.Count > 0)
@@ -173,7 +121,7 @@ public partial class Main : Node2D
     public static void Start()
     {
         Next();
-        _sInstance._isStart = true;
+        sInstance.isStart = true;
     }
 
     public static void Next()
@@ -186,22 +134,71 @@ public partial class Main : Node2D
             SkipTransitionEffect();
             return;
         }
+        
+        ParseStoryText();
+        ParseStoryTags();
+    }
 
-        _sInstance._guiManager.NameLabel.Text = "";
-        _sInstance._guiManager.TextLabel.Text = "";
-        var text = _sInstance._currentStory.Continue();
+    public static async void Process(double delta)
+    {
+        if (sInstance.isSkipping)
+        {
+            await sInstance.ToSignal(sInstance.GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
+            Next();
+        }
+
+        ProcessTransitions(delta);
+        
+        if (IsTransitionEffect())
+        {
+            sInstance.guiManager.NameLabel.Text = "";
+            sInstance.guiManager.TextLabel.Text = "";
+        }
+    }
+
+    public static bool CanContinue()
+    {
+        return sInstance.currentStory is { CanContinue: true };
+    }
+
+    public static bool IsTransitionEffect()
+    {
+        return sInstance.isTransitionEffect;
+    }
+
+    public static void SkipTransitionEffect()
+    {
+        sInstance.isSkipTransitionEffect = true;
+    }
+
+    public static bool IsSkipping()
+    {
+        return sInstance.isSkipping;
+    }
+
+    public static void SetIsSkipping(bool value)
+    {
+        sInstance.isSkipping = value;
+    }
+
+    private static void ParseStoryText()
+    {
+        var text = sInstance.currentStory.Continue();
         var pos = text.Find(':');
         if (pos != -1)
         {
-            _sInstance._currentName = text.Remove(pos, text.Length - 2);
+            sInstance.currentName = text.Remove(pos, text.Length - 2);
             text = text.Remove(0, pos + 1);
             if (text[0] == ' ')
                 text = text.Remove(0, 1);
         }
 
-        _sInstance._currentText = text;
+        sInstance.currentText = text;
+    }
 
-        foreach (var currentTag in _sInstance._currentStory.CurrentTags)
+    private static void ParseStoryTags()
+    {
+        foreach (var currentTag in sInstance.currentStory.CurrentTags)
         {
             var tag = currentTag;
 
@@ -210,31 +207,26 @@ public partial class Main : Node2D
 
             var commands = tag.Split(' ');
             var commandType = ECommandType.None;
-            BackgroundDescription backgroundDescription = new();
-            SpriteDescription spriteDescription = new();
+            
             Sprite sprite = null;
-
             Audio currentAudio = null;
 
-            foreach (var cmd in commands)
+            int idx;
+            for (idx = 0; idx < commands.Length; idx++)
             {
+                string cmd = commands[idx];
+                
                 switch (cmd)
                 {
                     case "show":
-                        backgroundDescription = new();
-                        spriteDescription = new();
                         sprite = null;
                         commandType = ECommandType.Show;
                         continue;
                     case "hide":
-                        backgroundDescription = new();
-                        spriteDescription = new();
                         sprite = null;
                         commandType = ECommandType.Hide;
                         continue;
                     case "scene":
-                        backgroundDescription = new();
-                        spriteDescription = new();
                         sprite = null;
                         commandType = ECommandType.Scene;
                         continue;
@@ -265,94 +257,82 @@ public partial class Main : Node2D
                     case ECommandType.Show:
                         if (sprite != null)
                             break;
-
-                        if (spriteDescription.Name.Length > 0)
+                        
+                        if (idx + 1 < commands.Length)
                         {
-                            spriteDescription.Emotion = cmd;
-                            sprite = GetSpriteEmotion(spriteDescription.Name, spriteDescription.Emotion);
-                            sprite.SetTransition(new TransitionResource(_sInstance.DefaultTransition));
-                            _sInstance._currentSprites.Add(sprite);
+                            sprite = GetSpriteEmotion(cmd, commands[++idx]);
+                            sprite.SetTransition(new TransitionResource(sInstance.DefaultTransition));
+                            sInstance.currentSprites.Add(sprite);
                         }
-                        else
-                        {
-                            spriteDescription.Name = cmd;
-                        }
-
+                        
                         break;
                     case ECommandType.Hide:
                         if (sprite != null)
                             break;
-
-                        if (spriteDescription.Name.Length > 0)
+                        
+                        if (idx + 1 < commands.Length)
                         {
-                            spriteDescription.Emotion = cmd;
-                            sprite = GetSpriteEmotion(spriteDescription.Name, spriteDescription.Emotion);
-                            _sInstance._spritesToRemove.Add(sprite);
+                            sprite = GetSpriteEmotion(cmd, commands[++idx]);
+                            sInstance.spritesToRemove.Add(sprite);
                         }
-                        else
-                        {
-                            spriteDescription.Name = cmd;
-                        }
-
                         break;
                     case ECommandType.Scene:
-                        if (_sInstance._previousBackground.Value == null)
-                            _sInstance._previousBackground = _sInstance._currentBackground;
+                        if (sInstance.previousBackground.Value == null)
+                            sInstance.previousBackground = sInstance.currentBackground;
 
-                        backgroundDescription.Name = cmd;
-                        _sInstance._currentBackground = GetBackground(backgroundDescription.Name);
-                        _sInstance._currentBackground.Value.SetTransition(new TransitionResource(_sInstance.DefaultTransition));
-                        _sInstance._currentBackground.Value.GetTransition().SetValue();
-                        _sInstance._currentBackground.Value.ZIndex = 0;
-                        if (_sInstance._previousBackground.Value != null)
+                        sInstance.currentBackground = GetBackground(cmd);
+                        sInstance.currentBackground.Value.SetTransition(new TransitionResource(sInstance.DefaultTransition));
+                        sInstance.currentBackground.Value.GetTransition().SetValue();
+                        sInstance.currentBackground.Value.ZIndex = 0;
+                        if (sInstance.previousBackground.Value != null)
                         {
-                            _sInstance._previousBackground.Value.GetTransition().SetValue(1.0f);
-                            _sInstance._previousBackground.Value.ZIndex = -1;
+                            sInstance.previousBackground.Value.GetTransition().SetValue(1.0f);
+                            sInstance.previousBackground.Value.ZIndex = -1;
                         }
                         break;
                     case ECommandType.WithTransition:
                         var transition = GetTransition(cmd);
-                        if (sprite != null && _sInstance._spritesToRemove.Count == 0)
+                        if (sprite != null && sInstance.spritesToRemove.Count == 0)
                         {
                             sprite.SetTransition(transition);
                             sprite.GetTransition().SetValue();
                         }
-                        else if (_sInstance._spritesToRemove.Count > 0)
+                        else if (sInstance.spritesToRemove.Count > 0)
                         {
-                            foreach (var spr in _sInstance._spritesToRemove)
+                            foreach (var spr in sInstance.spritesToRemove)
                             {
                                 spr.SetTransition(new TransitionResource(transition));
                                 spr.GetTransition().SetValue(1.0f);
                             }
                         }
-                        else if (_sInstance._currentBackground.Key != null)
+                        else if (sInstance.currentBackground.Key != null)
                         {
-                            _sInstance._currentBackground.Value.SetTransition(transition);
-                            _sInstance._currentBackground.Value.GetTransition().SetValue();
+                            sInstance.currentBackground.Value.SetTransition(transition);
+                            sInstance.currentBackground.Value.GetTransition().SetValue();
                         }
 
                         break;
                     case ECommandType.AtAnchor:
                         if (sprite != null)
                             sprite.SetAnchor(Enum.Parse<Sprite.ESpriteAnchor>(cmd, true));
-                        else if (_sInstance._currentBackground.Key != null)
-                            _sInstance._currentBackground.Value.SetAnchor(Enum.Parse<Sprite.ESpriteAnchor>(cmd, true));
+                        else if (sInstance.currentBackground.Key != null)
+                            sInstance.currentBackground.Value.SetAnchor(Enum.Parse<Sprite.ESpriteAnchor>(cmd, true));
                         break;
                     case ECommandType.Jump:
                         ChangeStory(GetStory(cmd));
                         Next();
                         break;
                     case ECommandType.PlayAudio:
-                        currentAudio = _sInstance._audioManager.PlayAudio(cmd, 2.5f);
+                        currentAudio = sInstance.audioManager.PlayAudio(cmd, 2.5f);
                         break;
                     case ECommandType.StopAudio:
-                        currentAudio = _sInstance._audioManager.StopAudio(cmd, 2.5f);
+                        currentAudio = sInstance.audioManager.StopAudio(cmd, 2.5f);
                         break;
                     case ECommandType.InBusAudio:
                         string currentBusName = "";
-                        for (int i = 0; i < AudioServer.BusCount; i++)
+                        for (idx = 0; idx < AudioServer.BusCount; idx++)
                         {
-                            var busName = AudioServer.GetBusName(i);
+                            var busName = AudioServer.GetBusName(idx);
                             if (busName.ToLower() == cmd.ToLower())
                                 currentBusName = busName;
                         }
@@ -365,198 +345,209 @@ public partial class Main : Node2D
         }
     }
 
-    public static async void Process(double delta)
+    private static void ProcessTransitions(double delta)
     {
-        if (_sInstance._isSkipping)
+        if (sInstance.isStart)
         {
-            await _sInstance.ToSignal(_sInstance.GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
-            Next();
-        }
-
-        if (_sInstance._isStart)
-        {
-            if (!_sInstance._currentBackground.Value.GetTransition().IsEnded())
+            if (!sInstance.currentBackground.Value.GetTransition().IsEnded())
             {
-                if (_sInstance._isSkipTransitionEffect)
+                if (sInstance.isSkipTransitionEffect)
                 {
-                    _sInstance._currentBackground.Value.GetTransition().SetValue(1.0f);
-                    _sInstance._isSkipTransitionEffect = false;
-                    _sInstance._isTransitionEffect = false;
-                    _sInstance._isStart = false;
+                    sInstance.currentBackground.Value.GetTransition().SetValue(1.0f);
+                    sInstance.isSkipTransitionEffect = false;
+                    sInstance.isTransitionEffect = false;
+                    sInstance.isStart = false;
                 }
                 else
                 {
-                    _sInstance._currentBackground.Value.GetTransition().Process(delta * _sInstance.DissolveBackgroundValue);
-                    _sInstance._isTransitionEffect = true;
+                    sInstance.currentBackground.Value.GetTransition().Process(delta * sInstance.DissolveBackgroundValue);
+                    sInstance.isTransitionEffect = true;
                 }
             }
             else
             {
-                _sInstance._currentBackground.Value.GetTransition().SetValue(1.0f);
-                _sInstance._isTransitionEffect = false;
-                _sInstance._isStart = false;
+                sInstance.currentBackground.Value.GetTransition().SetValue(1.0f);
+                sInstance.isTransitionEffect = false;
+                sInstance.isStart = false;
             }
         }
 
-        if (_sInstance._spritesToRemove.Count == 0)
+        if (sInstance.spritesToRemove.Count == 0)
         {
-            if (_sInstance._currentBackground.Value.GetTransition().IsEnded() && _sInstance._previousBackground.Key == null)
+            if (sInstance.currentBackground.Value.GetTransition().IsEnded() && sInstance.previousBackground.Key == null)
             {
                 var isSpritesShowed = true;
-                foreach (var sprite in _sInstance._currentSprites)
+                foreach (var sprite in sInstance.currentSprites)
                 {
                     if (!sprite.GetTransition().IsEnded())
                     {
-                        if (_sInstance._isSkipTransitionEffect)
+                        if (sInstance.isSkipTransitionEffect)
                         {
                             sprite.GetTransition().SetValue(1.0f);
-                            _sInstance._isSkipTransitionEffect = false;
+                            sInstance.isSkipTransitionEffect = false;
                         }
                         else
                         {
-                            sprite.GetTransition().Process(delta * _sInstance.DissolveSpritesValue);
-                            _sInstance._isTransitionEffect = true;
+                            sprite.GetTransition().Process(delta * sInstance.DissolveSpritesValue);
+                            sInstance.isTransitionEffect = true;
                         }
                         isSpritesShowed = false;
                     }
                     else
                     {
                         sprite.GetTransition().SetValue(1.0f);
-                        _sInstance._isTransitionEffect = false;
+                        sInstance.isTransitionEffect = false;
                     }
                 }
 
                 if (isSpritesShowed)
                 {
-                    if (_sInstance._textBoxTransition.IsEnded())
+                    if (sInstance.textBoxTransition.IsEnded())
                     {
-                        _sInstance._textBoxTransition.SetValue(1.0f);
-                        _sInstance._isTransitionEffect = false;
-                        _sInstance._guiManager.NameLabel.Text = _sInstance._currentName;
-                        _sInstance._guiManager.TextLabel.Text = _sInstance._currentText;
+                        sInstance.textBoxTransition.SetValue(1.0f);
+                        sInstance.isTransitionEffect = false;
+                        sInstance.guiManager.NameLabel.Text = sInstance.currentName;
+                        sInstance.guiManager.TextLabel.Text = sInstance.currentText;
                     }
                     else
                     {
-                        if (_sInstance._isSkipTransitionEffect)
+                        if (sInstance.isSkipTransitionEffect)
                         {
-                            _sInstance._textBoxTransition.SetValue(1.0f);
-                            _sInstance._isSkipTransitionEffect = false;
+                            sInstance.textBoxTransition.SetValue(1.0f);
+                            sInstance.isSkipTransitionEffect = false;
                         }
                         else
                         {
-                            _sInstance._textBoxTransition.Process(delta * _sInstance.DissolveTextBoxValue);
-                            _sInstance._isTransitionEffect = true;
+                            sInstance.textBoxTransition.Process(delta * sInstance.DissolveTextBoxValue);
+                            sInstance.isTransitionEffect = true;
                         }
                     }
                 }
             }
-            else if (_sInstance._previousBackground.Key != null)
+            else if (sInstance.previousBackground.Key != null)
             {
-                if (_sInstance._textBoxTransition.IsEnded(true))
+                if (sInstance.textBoxTransition.IsEnded(true))
                 {
-                    if (_sInstance._isSkipTransitionEffect)
+                    if (sInstance.isSkipTransitionEffect)
                     {
-                        _sInstance._textBoxTransition.SetValue();
-                        _sInstance._isSkipTransitionEffect = false;
+                        sInstance.textBoxTransition.SetValue();
+                        sInstance.isSkipTransitionEffect = false;
                     }
                     else
                     {
-                        _sInstance._textBoxTransition.Process(delta * _sInstance.DissolveTextBoxValue, true);
-                        _sInstance._isTransitionEffect = true;
+                        sInstance.textBoxTransition.Process(delta * sInstance.DissolveTextBoxValue, true);
+                        sInstance.isTransitionEffect = true;
                     }
                 }
                 else
                 {
-                    _sInstance._textBoxTransition.SetValue();
-                    if (!_sInstance._currentBackground.Value.GetTransition().IsEnded())
+                    sInstance.textBoxTransition.SetValue();
+                    if (!sInstance.currentBackground.Value.GetTransition().IsEnded())
                     {
-                        if (_sInstance._isSkipTransitionEffect)
+                        if (sInstance.isSkipTransitionEffect)
                         {
-                            _sInstance._currentBackground.Value.GetTransition().SetValue(1.0f);
-                            _sInstance._isSkipTransitionEffect = false;
+                            sInstance.currentBackground.Value.GetTransition().SetValue(1.0f);
+                            sInstance.isSkipTransitionEffect = false;
                         }
                         else
                         {
-                            _sInstance._currentBackground.Value.GetTransition().TransitionMaterial
-                                .SetShaderParameter("PreviousTexture", _sInstance._previousBackground.Value.Texture);
-                            _sInstance._currentBackground.Value.GetTransition().Process(delta * _sInstance.DissolveBackgroundValue);
-                            _sInstance._isTransitionEffect = true;
+                            sInstance.currentBackground.Value.GetTransition().TransitionMaterial
+                                .SetShaderParameter("PreviousTexture", sInstance.previousBackground.Value.Texture);
+                            sInstance.currentBackground.Value.GetTransition().Process(delta * sInstance.DissolveBackgroundValue);
+                            sInstance.isTransitionEffect = true;
                         }
                     }
                     else
                     {
-                        _sInstance._previousBackground.Value.GetTransition().SetValue();
-                        _sInstance._currentBackground.Value.GetTransition().SetValue(1.0f);
-                        _sInstance._previousBackground = new KeyValuePair<Node2D, Sprite>();
-                        _sInstance._isTransitionEffect = false;
+                        sInstance.previousBackground.Value.GetTransition().SetValue();
+                        sInstance.currentBackground.Value.GetTransition().SetValue(1.0f);
+                        sInstance.previousBackground = new KeyValuePair<Node2D, Sprite>();
+                        sInstance.isTransitionEffect = false;
                     }
                 }
             }
         }
         else
         {
-            if (_sInstance._textBoxTransition.IsEnded(true))
+            if (sInstance.textBoxTransition.IsEnded(true))
             {
-                if (_sInstance._isSkipTransitionEffect)
+                if (sInstance.isSkipTransitionEffect)
                 {
-                    _sInstance._textBoxTransition.SetValue();
-                    _sInstance._isSkipTransitionEffect = false;
+                    sInstance.textBoxTransition.SetValue();
+                    sInstance.isSkipTransitionEffect = false;
                 }
                 else
                 {
-                    _sInstance._textBoxTransition.Process(delta * _sInstance.DissolveTextBoxValue, true);
+                    sInstance.textBoxTransition.Process(delta * sInstance.DissolveTextBoxValue, true);
                 }
 
-                _sInstance._isTransitionEffect = true;
+                sInstance.isTransitionEffect = true;
             }
             else
             {
-                var sprite = _sInstance._spritesToRemove[0];
+                var sprite = sInstance.spritesToRemove[0];
                 if (sprite.GetTransition().IsEnded(true))
                 {
-                    _sInstance._isTransitionEffect = true;
-                    if (_sInstance._isSkipTransitionEffect)
+                    sInstance.isTransitionEffect = true;
+                    if (sInstance.isSkipTransitionEffect)
                     {
                         sprite.GetTransition().SetValue();
-                        _sInstance._isSkipTransitionEffect = false;
+                            sInstance.isSkipTransitionEffect = false;
                     }
                     else
                     {
-                        sprite.GetTransition().Process(delta * _sInstance.DissolveSpritesValue, true);
+                        sprite.GetTransition().Process(delta * sInstance.DissolveSpritesValue, true);
                     }
                 }
                 else
                 {
-                    _sInstance._isTransitionEffect = false;
-                    _sInstance._spritesToRemove.Remove(sprite);
-                    _sInstance._currentSprites.Remove(sprite);
+                    sInstance.isTransitionEffect = false;
+                    sInstance.spritesToRemove.Remove(sprite);
+                    sInstance.currentSprites.Remove(sprite);
                 }
             }
         }
     }
 
-    public static bool CanContinue()
+    private static TransitionResource GetTransition(string tag)
     {
-        return _sInstance._currentStory.CanContinue;
+        foreach (var transition in sInstance.Resources.Transitions)
+            if (transition.Tag == tag)
+                return new TransitionResource(transition);
+
+        return null;
+    }
+    
+    private static Sprite GetSpriteEmotion(string spriteName, string emotionName)
+    {
+        foreach (var item in sInstance.sprites)
+            if (item.Key.Name == spriteName)
+                foreach (var sprite in item.Value)
+                    if (sprite.Name == emotionName)
+                        return sprite;
+        return null;
     }
 
-    public static bool IsTransitionEffect()
+    private static KeyValuePair<Node2D, Sprite> GetBackground(string name)
     {
-        return _sInstance._isTransitionEffect;
+        foreach (var item in sInstance.backgrounds)
+            if (item.Value.Name == name)
+                return item;
+
+        return new KeyValuePair<Node2D, Sprite>();
     }
 
-    public static void SkipTransitionEffect()
+    private static void ChangeStory(KeyValuePair<InkStory, string> story)
     {
-        _sInstance._isSkipTransitionEffect = true;
+        sInstance.currentStory = story.Key;
+        sInstance.currentStory.ChoosePathString(story.Value);
     }
 
-    public static bool IsSkipping()
+    private static KeyValuePair<InkStory, string> GetStory(string name)
     {
-        return _sInstance._isSkipping;
-    }
-
-    public static void SetIsSkipping(bool value)
-    {
-        _sInstance._isSkipping = value;
+        foreach (var item in sInstance.Stories)
+            if (item.Key.GlobalTags[0] == name)
+                return item;
+        return new KeyValuePair<InkStory, string>();
     }
 }

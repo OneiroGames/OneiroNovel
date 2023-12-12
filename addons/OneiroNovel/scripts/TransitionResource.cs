@@ -8,7 +8,7 @@ public partial class TransitionResource : Resource
     [Export] public string Tag;
     [Export] public ShaderMaterial TransitionMaterial;
 
-    private float _transitionValue;
+    private float transitionValue;
 
     public TransitionResource()
     {
@@ -33,7 +33,7 @@ public partial class TransitionResource : Resource
         TransitionMaterial.Shader = copy.TransitionMaterial.Shader;
         TransitionMaterial.SetShaderParameter("PreviousTexture", copy.TransitionMaterial.GetShaderParameter("PreviousTexture"));
         TransitionMaterial.SetShaderParameter("DissolveTexture", copy.TransitionMaterial.GetShaderParameter("DissolveTexture"));
-        SetValue(copy._transitionValue);
+        SetValue(copy.transitionValue);
     }
 
     public void SetValue(float value = 0.0f)
@@ -46,10 +46,10 @@ public partial class TransitionResource : Resource
         float dt = (float)delta;
         if (revert)
         {
-            switch (_transitionValue)
+            switch (transitionValue)
             {
                 case > 0.0f:
-                    UpdateTransitionMaterial(_transitionValue - dt);
+                    UpdateTransitionMaterial(transitionValue - dt);
                     break;
                 case < 0.0f:
                     UpdateTransitionMaterial(0.0f);
@@ -58,10 +58,10 @@ public partial class TransitionResource : Resource
         }
         else
         {
-            switch (_transitionValue)
+            switch (transitionValue)
             {
                 case < 1.0f:
-                    UpdateTransitionMaterial(_transitionValue + dt);
+                    UpdateTransitionMaterial(transitionValue + dt);
                     break;
                 case > 1.0f:
                     UpdateTransitionMaterial(1.0f);
@@ -73,18 +73,18 @@ public partial class TransitionResource : Resource
 
     public bool IsEnded(bool revert = false)
     {
-        return revert ? _transitionValue > 0.0f : _transitionValue >= 1.0f;
+        return revert ? transitionValue > 0.0f : transitionValue >= 1.0f;
     }
 
     public float GetValue()
     {
-        return _transitionValue;
+        return transitionValue;
     }
 
     private void UpdateTransitionMaterial(float value)
     {
         TransitionMaterial.SetShaderParameter("TransitionValue", value);
-        _transitionValue = value;
+        transitionValue = value;
         EmitChanged();
     }
 }

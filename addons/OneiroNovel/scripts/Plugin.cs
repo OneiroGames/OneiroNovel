@@ -7,7 +7,7 @@ namespace OneiroNovel;
 [Tool]
 public partial class Plugin : EditorPlugin
 {
-    private readonly Array<Dictionary> _customTypes = new(new []
+    private readonly Array<Dictionary> customTypes = new(new []
     {
         new Dictionary
         {
@@ -60,7 +60,7 @@ public partial class Plugin : EditorPlugin
         }
     });
     
-    private Array<Dictionary> Settings = new(new[]
+    private Array<Dictionary> settings = new(new[]
     {
         new Dictionary
         {
@@ -74,14 +74,14 @@ public partial class Plugin : EditorPlugin
     
     public override void _EnterTree()
     {
-        foreach (var type in _customTypes)
+        foreach (var type in customTypes)
         {
             AddCustomType(type["name"].As<string>(), type["base"].As<string>(), type["script"].As<Script>(), type["icon"].As<Texture2D>());
         }
         
         if (!ProjectSettings.HasSetting("OneiroNovel/Settings/ModSearchPath"))
         {
-            foreach (var setting in Settings)
+            foreach (var setting in settings)
             {
                 ProjectSettings.AddPropertyInfo(setting);
                 ProjectSettings.SetSetting(setting["name"].AsString(), setting["default_value"]);
@@ -94,12 +94,12 @@ public partial class Plugin : EditorPlugin
 
     public override void _ExitTree()
     {
-        foreach (var type in _customTypes)
+        foreach (var type in customTypes)
         {
             RemoveCustomType(type["name"].As<string>());
         }
 
-        foreach (var setting in Settings)
+        foreach (var setting in settings)
         {
             ProjectSettings.Singleton.GetPropertyList().Remove(setting);
         }

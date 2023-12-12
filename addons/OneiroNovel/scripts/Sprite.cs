@@ -6,7 +6,7 @@ namespace OneiroNovel;
 [Tool]
 public partial class Sprite : Sprite2D
 {
-    private TransitionResource _transition = null;
+    private TransitionResource transition = null;
 
     public enum ESpriteAnchor
     {
@@ -36,15 +36,15 @@ public partial class Sprite : Sprite2D
         }
     }
     
-    public void SetTransition(TransitionResource transition)
+    public void SetTransition(TransitionResource value)
     {
-        _transition = transition;
+        transition = value;
         Material = transition.TransitionMaterial;
     }
     
     public TransitionResource GetTransition()
     {
-        return _transition;
+        return transition;
     }
     
 #if TOOLS
