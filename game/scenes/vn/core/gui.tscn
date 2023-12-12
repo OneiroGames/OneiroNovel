@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=3 uid="uid://bs0u2mwro7opk"]
 
-[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelGuiManager.cs" id="1_pi5yq"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/GuiManager.cs" id="1_pi5yq"]
 [ext_resource type="Texture2D" uid="uid://cef710cr3fmhk" path="res://game/assets/ui/textbox.png" id="2_ttx00"]
 
 [sub_resource type="SystemFont" id="SystemFont_rhct1"]

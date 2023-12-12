@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using Godot;
 using GodotInk;
 
-public partial class OneiroNovelMain : Node2D
+namespace OneiroNovel;
+
+public partial class Main : Node2D
 {
-    private static OneiroNovelMain _sInstance;
+    private static Main _sInstance;
 
     [Export] public float DissolveBackgroundValue = 0.75f;
     [Export] public float DissolveSpritesValue = 1.25f;
@@ -17,32 +19,32 @@ public partial class OneiroNovelMain : Node2D
     [Export] public PackedScene AudioScene;
     [Export] public string AudioManagerName = "NovelAudioManager";
     
-    [Export] public OneiroNovelResources Resources;
-    [Export] public OneiroNovelTransition DefaultTransition;
+    [Export] public Resources Resources;
+    [Export] public TransitionResource DefaultTransition;
 
     [Export] public Godot.Collections.Dictionary<InkStory, string> Stories;
 
-    private readonly List<KeyValuePair<Node2D, List<OneiroNovelSprite>>> _sprites = new();
-    private readonly List<KeyValuePair<Node2D, OneiroNovelSprite>> _backgrounds = new();
+    private readonly List<KeyValuePair<Node2D, List<Sprite>>> _sprites = new();
+    private readonly List<KeyValuePair<Node2D, Sprite>> _backgrounds = new();
     
     private InkStory _currentStory;
     
     private string _currentName = "";
     private string _currentText = "";
 
-    private readonly List<OneiroNovelSprite> _currentSprites = new();
-    private readonly List<OneiroNovelSprite> _spritesToRemove = new();
+    private readonly List<Sprite> _currentSprites = new();
+    private readonly List<Sprite> _spritesToRemove = new();
 
-    private KeyValuePair<Node2D, OneiroNovelSprite> _currentBackground;
-    private KeyValuePair<Node2D, OneiroNovelSprite> _previousBackground;
+    private KeyValuePair<Node2D, Sprite> _currentBackground;
+    private KeyValuePair<Node2D, Sprite> _previousBackground;
 
-    private OneiroNovelGuiManager _guiManager;
+    private GuiManager _guiManager;
     private Node _guiSceneNode;
     
-    private OneiroNovelAudioManager _audioManager;
+    private AudioManager _audioManager;
     private Node _audioSceneNode;
 
-    private OneiroNovelTransition _textBoxTransition;
+    private TransitionResource _textBoxTransition;
 
     private bool _isTransitionEffect;
     private bool _isSkipTransitionEffect;
@@ -59,7 +61,8 @@ public partial class OneiroNovelMain : Node2D
         AtAnchor,
         Jump,
         PlayAudio,
-        StopAudio
+        StopAudio,
+        InBusAudio
     }
 
     private class BackgroundDescription
@@ -73,16 +76,16 @@ public partial class OneiroNovelMain : Node2D
         public string Name = "";
     }
 
-    private static OneiroNovelTransition GetTransition(string tag)
+    private static TransitionResource GetTransition(string tag)
     {
         foreach (var transition in _sInstance.Resources.Transitions)
             if (transition.Tag == tag)
-                return new OneiroNovelTransition(transition);
+                return new TransitionResource(transition);
 
         return null;
     }
     
-    private static OneiroNovelSprite GetSpriteEmotion(string spriteName, string emotionName)
+    private static Sprite GetSpriteEmotion(string spriteName, string emotionName)
     {
         foreach (var item in _sInstance._sprites)
             if (item.Key.Name == spriteName)
@@ -92,13 +95,13 @@ public partial class OneiroNovelMain : Node2D
         return null;
     }
 
-    private static KeyValuePair<Node2D, OneiroNovelSprite> GetBackground(string name)
+    private static KeyValuePair<Node2D, Sprite> GetBackground(string name)
     {
         foreach (var item in _sInstance._backgrounds)
             if (item.Value.Name == name)
                 return item;
 
-        return new KeyValuePair<Node2D, OneiroNovelSprite>();
+        return new KeyValuePair<Node2D, Sprite>();
     }
 
     public static void ChangeStory(KeyValuePair<InkStory, string> story)
@@ -120,13 +123,13 @@ public partial class OneiroNovelMain : Node2D
         _sInstance = this;
         _guiSceneNode = GuiScene.Instantiate();
         AddChild(_guiSceneNode);
-        _guiManager = _guiSceneNode.GetNode<OneiroNovelGuiManager>(GuiManagerName);
+        _guiManager = _guiSceneNode.GetNode<GuiManager>(GuiManagerName);
         
         _audioSceneNode = AudioScene.Instantiate();
         AddChild(_audioSceneNode);
-        _audioManager = _audioSceneNode.GetNode<OneiroNovelAudioManager>(AudioManagerName);
+        _audioManager = _audioSceneNode.GetNode<AudioManager>(AudioManagerName);
 
-        _textBoxTransition = new OneiroNovelTransition(DefaultTransition);
+        _textBoxTransition = new TransitionResource(DefaultTransition);
         _guiManager.TextBox.Material = _textBoxTransition.TransitionMaterial;
         
         _textBoxTransition.TransitionMaterial.SetShaderParameter("UseColor", true);
@@ -134,29 +137,29 @@ public partial class OneiroNovelMain : Node2D
         foreach (var background in Resources.Backgrounds)
         {
             var bg = background.Key.Instantiate<Node2D>();
-            var spr = bg.GetNode<OneiroNovelSprite>(background.Value);
+            var spr = bg.GetNode<Sprite>(background.Value);
             bg.Visible = true;
             spr.Visible = true;
-            spr.SetTransition(new OneiroNovelTransition(DefaultTransition));
-            _backgrounds.Add(new KeyValuePair<Node2D, OneiroNovelSprite>(bg, spr));
+            spr.SetTransition(new TransitionResource(DefaultTransition));
+            _backgrounds.Add(new KeyValuePair<Node2D, Sprite>(bg, spr));
             AddChild(bg);
         }
 
         foreach (var sprite in Resources.Sprites)
         {
-            List<OneiroNovelSprite> sprites = new();
+            List<Sprite> sprites = new();
             var node = sprite.Key.Instantiate<Node2D>();
             node.Visible = true;
             AddChild(node);
             foreach (var spriteEmotion in sprite.Value)
             {
-                var spr = node.GetNode<OneiroNovelSprite>(spriteEmotion);
+                var spr = node.GetNode<Sprite>(spriteEmotion);
                 spr.Visible = true;
-                spr.SetTransition(new OneiroNovelTransition(DefaultTransition));
+                spr.SetTransition(new TransitionResource(DefaultTransition));
                 sprites.Add(spr);
             }
 
-            _sprites.Add(new KeyValuePair<Node2D, List<OneiroNovelSprite>>(node, sprites));
+            _sprites.Add(new KeyValuePair<Node2D, List<Sprite>>(node, sprites));
         }
         
         if (Stories.Count > 0)
@@ -209,7 +212,9 @@ public partial class OneiroNovelMain : Node2D
             var commandType = ECommandType.None;
             BackgroundDescription backgroundDescription = new();
             SpriteDescription spriteDescription = new();
-            OneiroNovelSprite sprite = null;
+            Sprite sprite = null;
+
+            Audio currentAudio = null;
 
             foreach (var cmd in commands)
             {
@@ -248,6 +253,9 @@ public partial class OneiroNovelMain : Node2D
                     case "stop":
                         commandType = ECommandType.StopAudio;
                         continue;
+                    case "in":
+                        commandType = ECommandType.InBusAudio;
+                        continue;
                 }
 
                 switch (commandType)
@@ -262,7 +270,7 @@ public partial class OneiroNovelMain : Node2D
                         {
                             spriteDescription.Emotion = cmd;
                             sprite = GetSpriteEmotion(spriteDescription.Name, spriteDescription.Emotion);
-                            sprite.SetTransition(new OneiroNovelTransition(_sInstance.DefaultTransition));
+                            sprite.SetTransition(new TransitionResource(_sInstance.DefaultTransition));
                             _sInstance._currentSprites.Add(sprite);
                         }
                         else
@@ -293,7 +301,7 @@ public partial class OneiroNovelMain : Node2D
 
                         backgroundDescription.Name = cmd;
                         _sInstance._currentBackground = GetBackground(backgroundDescription.Name);
-                        _sInstance._currentBackground.Value.SetTransition(new OneiroNovelTransition(_sInstance.DefaultTransition));
+                        _sInstance._currentBackground.Value.SetTransition(new TransitionResource(_sInstance.DefaultTransition));
                         _sInstance._currentBackground.Value.GetTransition().SetValue();
                         _sInstance._currentBackground.Value.ZIndex = 0;
                         if (_sInstance._previousBackground.Value != null)
@@ -313,7 +321,7 @@ public partial class OneiroNovelMain : Node2D
                         {
                             foreach (var spr in _sInstance._spritesToRemove)
                             {
-                                spr.SetTransition(transition);
+                                spr.SetTransition(new TransitionResource(transition));
                                 spr.GetTransition().SetValue(1.0f);
                             }
                         }
@@ -326,19 +334,29 @@ public partial class OneiroNovelMain : Node2D
                         break;
                     case ECommandType.AtAnchor:
                         if (sprite != null)
-                            sprite.SetAnchor(Enum.Parse<OneiroNovelSprite.ESpriteAnchor>(cmd, true));
+                            sprite.SetAnchor(Enum.Parse<Sprite.ESpriteAnchor>(cmd, true));
                         else if (_sInstance._currentBackground.Key != null)
-                            _sInstance._currentBackground.Value.SetAnchor(Enum.Parse<OneiroNovelSprite.ESpriteAnchor>(cmd, true));
+                            _sInstance._currentBackground.Value.SetAnchor(Enum.Parse<Sprite.ESpriteAnchor>(cmd, true));
                         break;
                     case ECommandType.Jump:
                         ChangeStory(GetStory(cmd));
                         Next();
                         break;
                     case ECommandType.PlayAudio:
-                        _sInstance._audioManager.PlayAudio(cmd, 2.5f);
+                        currentAudio = _sInstance._audioManager.PlayAudio(cmd, 2.5f);
                         break;
                     case ECommandType.StopAudio:
-                        _sInstance._audioManager.StopAudio(cmd, 2.5f);
+                        currentAudio = _sInstance._audioManager.StopAudio(cmd, 2.5f);
+                        break;
+                    case ECommandType.InBusAudio:
+                        string currentBusName = "";
+                        for (int i = 0; i < AudioServer.BusCount; i++)
+                        {
+                            var busName = AudioServer.GetBusName(i);
+                            if (busName.ToLower() == cmd.ToLower())
+                                currentBusName = busName;
+                        }
+                        currentAudio.Bus = currentBusName;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -469,7 +487,7 @@ public partial class OneiroNovelMain : Node2D
                     {
                         _sInstance._previousBackground.Value.GetTransition().SetValue();
                         _sInstance._currentBackground.Value.GetTransition().SetValue(1.0f);
-                        _sInstance._previousBackground = new KeyValuePair<Node2D, OneiroNovelSprite>();
+                        _sInstance._previousBackground = new KeyValuePair<Node2D, Sprite>();
                         _sInstance._isTransitionEffect = false;
                     }
                 }

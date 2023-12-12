@@ -1,7 +1,7 @@
 [gd_resource type="Resource" load_steps=6 format=3 uid="uid://ckj7ndr8uo1ek"]
 
 [ext_resource type="Shader" path="res://addons/OneiroNovel/assets/shaders/dissolve_shader.gdshader" id="1_cbsbb"]
-[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelTransition.cs" id="2_gqsj6"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/TransitionResource.cs" id="2_gqsj6"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_p6sgu"]
 noise_type = 0

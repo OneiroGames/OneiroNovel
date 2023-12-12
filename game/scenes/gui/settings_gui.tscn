@@ -1,0 +1,72 @@
+[gd_scene load_steps=2 format=3 uid="uid://c05e34x0o3q1a"]
+
+[ext_resource type="Script" path="res://game/scripts/SettingsGui.cs" id="1_76qj0"]
+
+[node name="SettingsGui" type="Control" node_paths=PackedStringArray("VolumeMasterSlider", "VolumeMusicSlider", "VolumeSfxSlider", "ExitButton")]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_76qj0")
+VolumeMasterSlider = NodePath("VBoxContainer/HSlider")
+VolumeMusicSlider = NodePath("VBoxContainer/HSlider2")
+VolumeSfxSlider = NodePath("VBoxContainer/HSlider3")
+ExitButton = NodePath("Button")
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_left = -800.0
+offset_top = 411.0
+offset_right = -708.0
+offset_bottom = 450.0
+text = "Exit"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -56.0
+offset_top = -29.0
+offset_right = 56.0
+offset_bottom = 29.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Volume Master"
+
+[node name="HSlider" type="HSlider" parent="VBoxContainer"]
+layout_mode = 2
+min_value = -80.0
+max_value = 6.0
+step = 0.1
+
+[node name="Label2" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Volume Music"
+
+[node name="HSlider2" type="HSlider" parent="VBoxContainer"]
+layout_mode = 2
+min_value = -80.0
+max_value = 6.0
+step = 0.1
+value = -20.0
+
+[node name="Label3" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Volume SFX"
+
+[node name="HSlider3" type="HSlider" parent="VBoxContainer"]
+layout_mode = 2
+min_value = -80.0
+max_value = 6.0
+step = 0.1
+value = -20.0

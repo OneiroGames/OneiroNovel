@@ -1,7 +1,9 @@
 ﻿using Godot;
 using Godot.Collections;
 
-public partial class OneiroNovelResources : Node2D
+namespace OneiroNovel;
+
+public partial class Resources : Node2D
 {
     /// <summary>
     ///     Collection of background scenes and its emotions.
@@ -13,5 +15,5 @@ public partial class OneiroNovelResources : Node2D
     /// </summary>
     [Export] public Dictionary<PackedScene, Array<string>> Sprites = new();
 
-    [Export] public Array<OneiroNovelTransition> Transitions = new();
+    [Export] public Array<TransitionResource> Transitions = new();
 }

@@ -1,19 +1,21 @@
 ﻿using Godot;
 
+namespace OneiroNovel;
+
 [Tool]
-public partial class OneiroNovelTransition : Resource
+public partial class TransitionResource : Resource
 {
     [Export] public string Tag;
     [Export] public ShaderMaterial TransitionMaterial;
 
     private float _transitionValue;
 
-    public OneiroNovelTransition()
+    public TransitionResource()
     {
         
     }
     
-    public OneiroNovelTransition(string tag, ShaderMaterial material)
+    public TransitionResource(string tag, ShaderMaterial material)
     {
         Tag = tag;
         TransitionMaterial = new ShaderMaterial();
@@ -24,7 +26,7 @@ public partial class OneiroNovelTransition : Resource
         SetValue();
     }
 
-    public OneiroNovelTransition(OneiroNovelTransition copy)
+    public TransitionResource(TransitionResource copy)
     {
         Tag = copy.Tag;
         TransitionMaterial = new ShaderMaterial();

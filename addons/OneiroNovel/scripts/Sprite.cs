@@ -1,10 +1,12 @@
 using System;
 using Godot;
 
+namespace OneiroNovel;
+
 [Tool]
-public partial class OneiroNovelSprite : Sprite2D
+public partial class Sprite : Sprite2D
 {
-    private OneiroNovelTransition _transition = null;
+    private TransitionResource _transition = null;
 
     public enum ESpriteAnchor
     {
@@ -34,13 +36,13 @@ public partial class OneiroNovelSprite : Sprite2D
         }
     }
     
-    public void SetTransition(OneiroNovelTransition transition)
+    public void SetTransition(TransitionResource transition)
     {
         _transition = transition;
         Material = transition.TransitionMaterial;
     }
     
-    public OneiroNovelTransition GetTransition()
+    public TransitionResource GetTransition()
     {
         return _transition;
     }

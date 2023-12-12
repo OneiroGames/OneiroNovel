@@ -1,20 +1,24 @@
-[gd_scene load_steps=13 format=3 uid="uid://cq31yhgtwnre1"]
+[gd_scene load_steps=15 format=3 uid="uid://cq31yhgtwnre1"]
 
 [ext_resource type="Script" path="res://game/scripts/Game.cs" id="1_fr6hj"]
-[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelMain.cs" id="2_arhg7"]
-[ext_resource type="PackedScene" uid="uid://bmiensvnmvt7t" path="res://game/scenes/bg_street_day.tscn" id="3_kw0a3"]
-[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelResources.cs" id="3_rq2od"]
-[ext_resource type="PackedScene" uid="uid://b6dbk2r3f4hyj" path="res://game/scenes/bg_bus_stop.tscn" id="4_5l76s"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/Main.cs" id="2_arhg7"]
+[ext_resource type="PackedScene" uid="uid://bmiensvnmvt7t" path="res://game/scenes/vn/backgrounds/bg_street_day.tscn" id="3_kw0a3"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/Resources.cs" id="3_rq2od"]
+[ext_resource type="PackedScene" uid="uid://b6dbk2r3f4hyj" path="res://game/scenes/vn/backgrounds/bg_bus_stop.tscn" id="4_5l76s"]
 [ext_resource type="Resource" uid="uid://bgcnomiqt7ta5" path="res://game/scripts/vn_main.ink" id="4_jal5k"]
-[ext_resource type="PackedScene" uid="uid://dcsqrxkhd2h8d" path="res://game/scenes/sprite_rin.tscn" id="5_xdbgl"]
+[ext_resource type="PackedScene" uid="uid://dcsqrxkhd2h8d" path="res://game/scenes/vn/sprites/sprite_rin.tscn" id="5_xdbgl"]
 [ext_resource type="Resource" uid="uid://ckj7ndr8uo1ek" path="res://addons/OneiroNovel/assets/transitions/dissolve_transition.tres" id="6_4wy1x"]
-[ext_resource type="PackedScene" uid="uid://bs0u2mwro7opk" path="res://game/scenes/vn_gui.tscn" id="6_8kf6e"]
+[ext_resource type="PackedScene" uid="uid://bs0u2mwro7opk" path="res://game/scenes/vn/core/gui.tscn" id="6_8kf6e"]
 [ext_resource type="Resource" uid="uid://cgu3nk2na0oho" path="res://addons/OneiroNovel/assets/transitions/fade_transition.tres" id="10_ch4wk"]
-[ext_resource type="PackedScene" uid="uid://som1u6oilsht" path="res://game/scenes/vn_audio.tscn" id="10_qw6b3"]
+[ext_resource type="PackedScene" uid="uid://som1u6oilsht" path="res://game/scenes/vn/core/audio.tscn" id="10_qw6b3"]
 [ext_resource type="Resource" uid="uid://d3ppbn7rcxx48" path="res://game/scripts/vn_day.ink" id="11_c652x"]
+[ext_resource type="PackedScene" uid="uid://743nmai0k7tb" path="res://game/scenes/gui/escape_gui.tscn" id="13_u21sk"]
+[ext_resource type="PackedScene" uid="uid://c05e34x0o3q1a" path="res://game/scenes/gui/settings_gui.tscn" id="14_7lg6e"]
 
-[node name="Node2D" type="Node2D"]
+[node name="Node2D" type="Node2D" node_paths=PackedStringArray("EscapeGui", "SettingsGui")]
 script = ExtResource("1_fr6hj")
+EscapeGui = NodePath("EscapeGui")
+SettingsGui = NodePath("SettingsGui")
 
 [node name="NovelResources" type="Node2D" parent="."]
 script = ExtResource("3_rq2od")
@@ -40,3 +44,27 @@ Stories = {
 ExtResource("4_jal5k"): "start",
 ExtResource("11_c652x"): "start"
 }
+
+[node name="EscapeGui" parent="." instance=ExtResource("13_u21sk")]
+visible = false
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 800.0
+offset_top = 450.0
+offset_right = 800.0
+offset_bottom = 450.0
+grow_horizontal = 1
+grow_vertical = 1
+size_flags_horizontal = 4
+size_flags_vertical = 0
+metadata/_edit_use_anchors_ = true
+
+[node name="SettingsGui" parent="." instance=ExtResource("14_7lg6e")]
+visible = false
+offset_left = 801.0
+offset_top = 450.0
+offset_right = 801.0
+offset_bottom = 450.0

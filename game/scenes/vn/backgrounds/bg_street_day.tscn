@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://bmiensvnmvt7t"]
 
 [ext_resource type="Texture2D" uid="uid://5cxurcyauorn" path="res://game/assets/backgrounds/Street_Spring_Day.png" id="1_tdl2m"]
-[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelSprite.cs" id="2_o5hp5"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/Sprite.cs" id="2_o5hp5"]
 
 [node name="street_day" type="Node2D"]
 

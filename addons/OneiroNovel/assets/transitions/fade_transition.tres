@@ -1,7 +1,7 @@
 [gd_resource type="Resource" load_steps=6 format=3 uid="uid://cgu3nk2na0oho"]
 
 [ext_resource type="Shader" path="res://addons/OneiroNovel/assets/shaders/fade_shader.gdshader" id="1_ajsdd"]
-[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/OneiroNovelTransition.cs" id="2_4jrql"]
+[ext_resource type="Script" path="res://addons/OneiroNovel/scripts/TransitionResource.cs" id="2_4jrql"]
 
 [sub_resource type="Gradient" id="Gradient_8gi1w"]
 offsets = PackedFloat32Array(0, 0.529851, 1)
