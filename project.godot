@@ -21,6 +21,11 @@ boot_splash/show_image=false
 boot_splash/fullsize=false
 boot_splash/use_filter=false
 
+[audio]
+
+buses/default_bus_layout="res://game/misc/default_bus_layout.tres"
+buses/channel_disable_threshold_db=-80.0
+
 [compression]
 
 formats/zstd/long_distance_matching=true
